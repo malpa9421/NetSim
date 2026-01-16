@@ -1,3 +1,10 @@
+# dodane wlasnorecznie wiec moze nie dzialac znajac mnie
+.idea/
+.DS_Store
+.vscode/
+
+
+
 # Prerequisites
 *.d
 
