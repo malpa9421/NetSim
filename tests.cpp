@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include "package.hxx"
 
 
 TEST(PackageTest, IsAssignedIdLowest) {
