@@ -1,5 +1,10 @@
-#ifndef NETSIM_STORAGE_HPP
-#define NETSIM_STORAGE_HPP
+#ifndef NETSIM_STORAGE_TYPES_HPP
+#define NETSIM_STORAGE_TYPES_HPP
+
+enum class PackageQueueType {
+    FIFO,
+    LIFO
+};
 
 class IPackageStockpile {
 public:
@@ -17,4 +22,4 @@ public:
     virtual const_iterator end() const = 0;
 };
 
-#endif //NETSIM_STORAGE_HPP
+#endif //NETSIM_STORAGE_TYPES_HPP
