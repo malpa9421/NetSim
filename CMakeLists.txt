@@ -7,9 +7,12 @@ include_directories(.)
 
 add_executable(NetSim
         main.cpp
-        package.cpp
-        package.hxx
-        storage_types.cpp
-        storage_types.hxx
+        src/package.cpp
+        include/package.hxx
+        src/storage_types.cpp
+        include/storage_types.hxx
         tests.cpp
-        types.hxx)
+        include/types.hxx
+        src/helpers.cpp
+        src/nodes.cpp
+        include/nodes.hxx)
