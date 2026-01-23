@@ -11,7 +11,7 @@ add_executable(NetSim
         include/package.hxx
         src/storage_types.cpp
         include/storage_types.hxx
-        tests.cpp
+        tests/tests.cpp
         include/types.hxx
         src/helpers.cpp
         src/nodes.cpp
