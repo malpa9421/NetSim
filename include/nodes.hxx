@@ -45,7 +45,7 @@ class PackageSender {
 public:
     PackageSender(PackageSender&&) = default;
     void send_package();
-    std::optional<Package> &get_sending_buffer();
+    std::optional<Package> &get_sending_buffer() {return sending_buffer_;}
     ReceiverPreferences receiver_preferences_;
 protected:
     void push_package(Package&&);
