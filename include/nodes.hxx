@@ -6,6 +6,7 @@
 #include "storage_types.hxx"
 #include "helpers.hxx"
 #include <map>
+#include <memory>
 #include <optional>
 
 enum class ReceiverType {
@@ -41,25 +42,25 @@ public:
     const_iterator begin() const {return preferences_.cbegin();}
     const_iterator end() const {return preferences_.cend();}
 
-    // explicit ReceiverPreferences(ProbabilityGenerator pg);
-    explicit ReceiverPreferences(ProbabilityGenerator pg = probability_generator);
+    explicit ReceiverPreferences(ProbabilityGenerator pg = probability_generator) {pg_ = std::move(pg);}
     void add_receiver(IPackageReceiver *r);
     void remove_receiver(IPackageReceiver *r);
     IPackageReceiver *choose_receiver();
-    preferences_t &get_preferences() {return preferences_;};
+    preferences_t &get_preferences() {return preferences_;}
 
     preferences_t preferences_;
+    ProbabilityGenerator pg_;
 };
 
 class PackageSender {
 public:
     PackageSender() = default;
-    PackageSender(PackageSender&& movable) = default;
+    PackageSender(PackageSender &&ps) = default;
     void send_package();
     std::optional<Package> &get_sending_buffer() {return sending_buffer_;}
     ReceiverPreferences receiver_preferences_;
 protected:
-    void push_package(Package&&);
+    void push_package(Package &&p) {sending_buffer_.emplace(p.get_id());}
 private:
     std::optional<Package> sending_buffer_ = std::nullopt;
 };
