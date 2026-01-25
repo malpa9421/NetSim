@@ -86,8 +86,9 @@ public:
     void receive_package(Package&& p) override;
 
     ElementID get_id() const override { return id_; }
-    //ReceiverType get_receiver_type() const override { return ReceiverType::STOREHOUSE; };
-
+    #if (defined EXERCISE_ID && EXERCISE_ID != EXERCISE_ID_NODES)
+        ReceiverType get_receiver_type() const override { return ReceiverType::STOREHOUSE; };
+    #endif
     IPackageStockpile::const_iterator cbegin() const override { return d_->cbegin(); }
     IPackageStockpile::const_iterator cend() const override { return d_->cend(); }
     IPackageStockpile::const_iterator begin() const override { return d_->begin(); }
@@ -112,8 +113,9 @@ public:
     void receive_package(Package&& p) override;
 
     ElementID get_id() const override { return id_; }
-    //ReceiverType get_receiver_type() const override { return ReceiverType::WORKER; };
-
+    #if (defined EXERCISE_ID && EXERCISE_ID != EXERCISE_ID_NODES)
+        ReceiverType get_receiver_type() const override { return ReceiverType::WORKER; };
+    #endif
     const std::optional<Package>& get_processing_buffer() const { return processing_buffer_; }
 
     IPackageStockpile::const_iterator cbegin() const override { return q_->cbegin(); }

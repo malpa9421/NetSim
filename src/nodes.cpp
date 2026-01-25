@@ -69,3 +69,7 @@ void Ramp::deliver_goods(Time t) {
         t_ = t;
     }
 }
+
+void Storehouse::receive_package(Package&& p) {
+    d_->push(std::move(p));
+}
