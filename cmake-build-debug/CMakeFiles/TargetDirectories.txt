@@ -1,3 +1,0 @@
-C:/Users/user/Documents/studia/ZPO/NetSim/cmake-build-debug/CMakeFiles/NetSim.dir
-C:/Users/user/Documents/studia/ZPO/NetSim/cmake-build-debug/CMakeFiles/edit_cache.dir
-C:/Users/user/Documents/studia/ZPO/NetSim/cmake-build-debug/CMakeFiles/rebuild_cache.dir
