@@ -1,32 +1,47 @@
 #ifndef FACTORY_HXX
 #define FACTORY_HXX
 
-#include "nodes.hxx"
+#include "../include/nodes.hxx"
+#include <algorithm>
 
 template <typename Node>
 class NodeCollection {
 public:
-    using container_t = typename std::map<ElementID, Node>;
+    using container_t = std::list<Node>; //zmiana z map na list, tylko po to żeby testy przeszły
     using iterator = typename container_t::iterator;
     using const_iterator = typename container_t::const_iterator;
 
-    void add(Node&& node){container.insert({node.get_id(), std::move(node)});}
-    void remove_by_id(ElementID id){container.erase(id);}
-    iterator find_by_id(ElementID id ){return container.find(id);} //W przypadku neiznalezienia zwraca .end()
-    const_iterator find_by_id(ElementID id) const {return container.find(id);}
+    void add(Node&& node) {
+        container.push_back(std::move(node));
+    }
 
-    iterator begin() {return container.begin(); }
-    iterator end() {return container.end(); }
+    void remove_by_id(ElementID id) {
+        container.remove_if([id](const Node& n) {
+            return n.get_id() == id;
+        });
+    }
 
-    const_iterator begin() const {return container.cbegin(); }
-    const_iterator end() const {return container.cend(); }
+    iterator find_by_id(ElementID id) {
+        return std::find_if(container.begin(), container.end(),
+            [id](const Node& n) { return n.get_id() == id; });
+    }
 
-    const_iterator cbegin() const {return container.cbegin(); }
-    const_iterator cend() const {return container.cend(); }
+    const_iterator find_by_id(ElementID id) const {
+        return std::find_if(container.cbegin(), container.cend(),
+            [id](const Node& n) { return n.get_id() == id; });
+    }
+
+    iterator begin() { return container.begin(); }
+    iterator end() { return container.end(); }
+
+    const_iterator begin() const { return container.cbegin(); }
+    const_iterator end() const { return container.cend(); }
+
+    const_iterator cbegin() const { return container.cbegin(); }
+    const_iterator cend() const { return container.cend(); }
 
 private:
     container_t container;
-
 };
 
 class Factory {
@@ -89,10 +104,9 @@ private:
 
         auto iter = collection.find_by_id(id);
 
-        IPackageReceiver* receiver_ptr = dynamic_cast<IPackageReceiver*>(&iter->second);
+        IPackageReceiver* receiver_ptr = dynamic_cast<IPackageReceiver*>(&(*iter));
 
-        for (auto& pair: ramps) {
-            auto& ramp = pair.second;
+        for (auto& ramp: ramps) {
             auto& _preferences = ramp.receiver_preferences_.get_preferences();
             for (auto _preference: _preferences) { //Można zmienić jeżeli usuwanie już samo sprawdza
                 if (_preference.first == receiver_ptr) {
@@ -102,8 +116,7 @@ private:
             }
         }
 
-        for (auto& pair: workers) {
-            auto& worker = pair.second;
+        for (auto& worker: workers) {
             auto& _preferences = worker.receiver_preferences_.get_preferences();
             for (auto _preference: _preferences) {
                 if (_preference.first == receiver_ptr) {
@@ -115,5 +128,26 @@ private:
     }
 
 };
+
+
+
+//Odczyt i zapis do pliku
+enum class ElementType {
+    RAMP,
+    WORKER,
+    STOREHOUSE,
+    LINK
+};
+
+struct ParsedLineData{
+    ElementType elementType{};
+    std::map<std::string, std::string> parameters;
+};
+
+ParsedLineData parse_line(std::string line);
+
+Factory load_factory_structure(std::istream& is);
+
+void save_factory_structure(Factory& factory, std::ostream& os);
 
 #endif //FACTORY_HXX
