@@ -71,8 +71,14 @@ public:
 
     NodeCollection<Storehouse>::const_iterator storehouse_cend() const {return storages.cend(); }
 
+    bool is_consistent() const;
+    void do_deliveries(Time t);
+    void do_work(Time t);
+    void do_package_passing();
+
 
 private:
+    bool has_reachable_storehouse(const PackageSender* sender, std::map<const PackageSender*, NodeColor>& visited) const;
 
     NodeCollection<Ramp> ramps;
     NodeCollection<Worker> workers;
