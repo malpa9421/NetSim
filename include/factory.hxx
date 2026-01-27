@@ -1,7 +1,7 @@
 #ifndef FACTORY_HXX
 #define FACTORY_HXX
 
-#include "../include/nodes.hxx"
+#include "nodes.hxx"
 
 template <typename Node>
 class NodeCollection {
@@ -110,4 +110,4 @@ private:
 
 };
 
-#endif //FACTORY_H
+#endif //FACTORY_HXX
