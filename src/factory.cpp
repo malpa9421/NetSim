@@ -1,5 +1,4 @@
-#include "../include/factory.hxx"
-#include "../include/nodes.hxx"
+#include "factory.hxx"
 
 
 bool Factory::is_consistent() const {

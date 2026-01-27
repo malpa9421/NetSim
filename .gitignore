@@ -1,10 +1,10 @@
+# dodane wlasnorecznie wiec moze nie dzialac znajac mnie
 .idea/
 .DS_Store
 .vscode/
 
 cmake-build-debug/
 cmake-build-release/
-
 
 # Prerequisites
 *.d

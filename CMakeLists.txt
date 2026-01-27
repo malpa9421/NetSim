@@ -16,4 +16,5 @@ add_executable(NetSim
         include/types.hxx
         src/helpers.cpp
         src/nodes.cpp
-        include/nodes.hxx)
+        include/nodes.hxx
+        src/factory.cpp)
