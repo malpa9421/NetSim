@@ -3,22 +3,19 @@
 #include <sstream>
 #include <iostream>
 #include <map>
-#include <set>
 #include <string>
-#include <vector>
 
 bool Factory::has_reachable_storehouse(const PackageSender* sender, std::map<const PackageSender*, NodeColor>& visited) const {
     if (visited[sender] == NodeColor::VERIFIED) {
         return true;
     }
     if (visited[sender] == NodeColor::VISITED) {
-        return true;
+        return false;
     }
 
     visited[sender] = NodeColor::VISITED;
 
-    auto mutable_sender = const_cast<PackageSender*>(sender);
-    const auto& prefs = mutable_sender->receiver_preferences_.get_preferences();
+    const auto& prefs = sender->receiver_preferences_.get_preferences();
 
     if (prefs.empty()) {
         throw std::logic_error("brak odbiorców dla węzła");
@@ -33,8 +30,8 @@ bool Factory::has_reachable_storehouse(const PackageSender* sender, std::map<con
         // czy odbiorca to Worker
         else {
             auto worker = dynamic_cast<Worker*>(receiver);
-            if (worker) {
-                const PackageSender* next_sender = dynamic_cast<const PackageSender*>(worker);
+            if (worker && worker != sender) {
+                const PackageSender* next_sender = static_cast<const PackageSender*>(worker);
                 if (has_reachable_storehouse(next_sender, visited)) {
                     can_reach = true;
                 }
@@ -95,37 +92,6 @@ void Factory::do_package_passing() {
         worker.send_package();
     }
 }
-
-
-
-std::istringstream tekst(R"(
-; == LOADING RAMPS ==
-
-LOADING_RAMP id=1 delivery-interval=3
-LOADING_RAMP id=2 delivery-interval=2
-
-; == WORKERS ==
-
-WORKER id=1 processing-time=2 queue-type=FIFO
-WORKER id=2 processing-time=1 queue-type=LIFO
-
-; == STOREHOUSES ==
-
-STOREHOUSE id=1
-
-; == LINKS ==
-
-LINK src=ramp-1 dest=worker-1
-
-LINK src=ramp-2 dest=worker-1
-LINK src=ramp-2 dest=worker-2
-
-LINK src=worker-1 dest=worker-1
-LINK src=worker-1 dest=worker-2
-
-LINK src=worker-2 dest=store-1
-)");
-
 
 
 
@@ -293,7 +259,6 @@ Factory load_factory_structure(std::istream& is) {
                         case NodeType::RAMP:
                             break;
                         case NodeType::WORKER:
-                            auto it = factory.find_worker_by_id(dest_node_id);
                             package_receiver = &*factory.find_worker_by_id(dest_node_id);
                         break;
                         case NodeType::STORE: {
@@ -331,32 +296,33 @@ enum class NodeType {
     RAMP, WORKER, STORE
     };
 
-static const std::map<NodeType, std::string> type_to_str{
-        {NodeType::RAMP, "ramp"},
-        {NodeType::WORKER, "worker"},
-        {NodeType::STORE, "store"}
-};
 
-
-//PROBLEM Z get_receiver_type() !!!
-std::stringstream save_links(PackageSender& sender, ElementID sender_id, std::string sender_type) { //Zapisujemy id bo PackageSender nie ma get_id
+std::stringstream save_links(const PackageSender& sender, const ElementID sender_id, const std::string& sender_type) { //Przekazujemy id bo PackageSender nie ma get_id
     std::stringstream out;
     auto& receivers = sender.receiver_preferences_.get_preferences();
     for (const auto& [receiver_ptr, probability] : receivers) {
-        ReceiverType receiver_type = receiver_ptr->get_receiver_type();
+        std::string receiver_type_str;
+        if(receiver_ptr->get_receiver_type() == ReceiverType::WORKER) {
+            receiver_type_str = "worker";
+        }
+        else receiver_type_str = "store";
 
-        out << "LINK src=" << sender_type << "-" << sender_id << " ";
+        out << "LINK src=" << sender_type << "-" << sender_id << " "
+        "dest=" << receiver_type_str << "-" << receiver_ptr->get_id() << "\n";
     }
+    out << "\n";
+    return out;
 }
 
 
 void save_factory_structure(Factory& factory, std::ostream& os) {
-    std::string links;
+    std::stringstream links;
 
     os << "; == LOADING RAMPS ==\n";
-    std::for_each(factory.ramp_cbegin(), factory.ramp_cend(), [&](Ramp& ramp) {
+    std::for_each(factory.ramp_cbegin(), factory.ramp_cend(), [&](const Ramp& ramp) {
         ElementID ramp_id = ramp.get_id();
-        save_links(ramp, ramp_id, "ramp");
+
+        links << save_links(ramp, ramp_id, "ramp").str();
         os << "LOADING_RAMP id=" << ramp_id << ' ' << "delivery-interval=" << ramp.get_delivery_interval() << '\n';
     });
 
@@ -374,15 +340,19 @@ void save_factory_structure(Factory& factory, std::ostream& os) {
         }
 
         ElementID worker_id = worker.get_id();
+
+        links << save_links(worker, worker_id, "worker").str();
         os << "WORKER id=" << worker_id << ' '
-           << "processing-time=" << worker.get_processing_duration() << ' '
-           << "queue-type=" << queue_type_str << '\n';
+           << "processing-time=" << worker.get_processing_duration() << ' ' << "queue-type=" << queue_type_str << '\n';
     });
 
     os << "; == STOREHOUSES ==\n";
     std::for_each(factory.storehouse_cbegin(), factory.storehouse_cend(), [&](const Storehouse& storehouse) {
         os << "STOREHOUSE id=" << storehouse.get_id() << '\n';
     });
+
+    os << "; == LINKS ==\n";
+    os << links.str();
 
     os.flush();
 }
